@@ -5,7 +5,7 @@ import WalletSummary from "./components/WalletSummary";
 import CashFlowGraph from "./components/CashFlowGraph";
 import "./App.css";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api";
 
 export default function App() {
   const [loading, setLoading] = useState(false);
