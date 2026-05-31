@@ -1,0 +1,136 @@
+.wallet-summary {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.wallet-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.wallet-address-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.wallet-address {
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
+.network-label {
+  font-size: 11px;
+  color: #475569;
+}
+
+.holder-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card.highlight {
+  border-color: #6366f1;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.detail-label {
+  color: #64748b;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.detail-value {
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.detail-value.mono {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #7dd3fc;
+}
+
+.abnormal-flags {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.flags-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f87171;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flag-badge {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  margin-right: 8px;
+  margin-bottom: 4px;
+}
+
+.disclaimer {
+  font-size: 11px;
+  color: #475569;
+  font-style: italic;
+  margin: 0;
+  margin-top: 8px;
+}

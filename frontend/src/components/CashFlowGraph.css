@@ -1,0 +1,201 @@
+.graph-container {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.graph-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.graph-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.graph-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.legend-note {
+  color: #475569;
+  font-style: italic;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cy-wrapper {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: #0f172a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cy-tooltip {
+  display: none;
+  position: absolute;
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #f1f5f9;
+  pointer-events: none;
+  z-index: 100;
+  max-width: 260px;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.cluster-table {
+  margin-top: 20px;
+}
+
+.cluster-table h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 12px;
+}
+
+.cluster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cluster-block {
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+}
+
+.cluster-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0f172a;
+  padding: 10px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.cluster-row:hover {
+  background: #1e293b;
+}
+
+.cluster-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cluster-id {
+  color: #f1f5f9;
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.cluster-size {
+  color: #94a3b8;
+  min-width: 90px;
+}
+
+.cluster-central {
+  color: #7dd3fc;
+  font-size: 11px;
+  flex: 1;
+}
+
+.cluster-toggle {
+  color: #475569;
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.cluster-addresses {
+  background: #080f1a;
+  padding: 8px 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.cluster-addr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 16px;
+  border-bottom: 1px solid #0f172a;
+  transition: background 0.1s;
+}
+
+.cluster-addr-row:hover {
+  background: #0f172a;
+}
+
+.central-badge {
+  background: #f59e0b22;
+  color: #f59e0b;
+  border: 1px solid #f59e0b55;
+  border-radius: 4px;
+  font-size: 9px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.addr-mono {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #cbd5e1;
+  flex: 1;
+  word-break: break-all;
+}
+
+.etherscan-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 13px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.etherscan-link:hover {
+  opacity: 1;
+}
+
+.mono {
+  font-family: "Courier New", monospace;
+}
