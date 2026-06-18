@@ -1,0 +1,140 @@
+.tx-table-wrapper {
+  margin-top: 24px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tx-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #334155;
+}
+
+.tx-table-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.tx-filter {
+  display: flex;
+  gap: 6px;
+}
+
+.tx-filter button {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tx-filter button.active {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+  font-weight: 600;
+}
+
+.tx-table-scroll {
+  overflow-x: auto;
+}
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tx-table th {
+  padding: 10px 16px;
+  text-align: left;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #334155;
+  white-space: nowrap;
+}
+
+.tx-table td {
+  padding: 10px 16px;
+  color: #cbd5e1;
+  border-bottom: 1px solid #1e293b;
+  white-space: nowrap;
+}
+
+.tx-table tr:last-child td {
+  border-bottom: none;
+}
+
+.tx-table tr:hover td {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.mono {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+}
+
+.hash-link {
+  color: #7dd3fc;
+  text-decoration: none;
+  font-family: "Courier New", monospace;
+}
+
+.hash-link:hover {
+  text-decoration: underline;
+}
+
+.self-addr {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.value-cell {
+  font-weight: 600;
+  font-family: "Courier New", monospace;
+}
+
+.value-cell.sent {
+  color: #f87171;
+}
+
+.value-cell.received {
+  color: #4ade80;
+}
+
+.status-badge {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.status-badge.success {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.status-badge.fail {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.time-cell {
+  color: #64748b;
+  font-size: 11px;
+}

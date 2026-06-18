@@ -10,39 +10,39 @@ const CLUSTER_COLORS = [
 function buildElements(graphData) {
   if (!graphData) return [];
 
-  const maxTxCount = Math.max(...graphData.edges.map((e) => e.txCount), 1);
-  const maxValue = Math.max(...graphData.edges.map((e) => e.totalValue), 1);
+  const maxTxCount = Math.max(...graphData.edges.map((e) => e.tx_count), 1);
+  const maxValue = Math.max(...graphData.edges.map((e) => e.total_value), 1);
 
   const nodes = graphData.nodes.map((node) => {
-    const clusterColor = node.clusterId
-      ? CLUSTER_COLORS[(node.clusterId - 1) % CLUSTER_COLORS.length]
+    const isCenter = node.type === "center";
+    const clusterColor = node.cluster_id !== undefined
+      ? CLUSTER_COLORS[node.cluster_id % CLUSTER_COLORS.length]
       : "#6366f1";
-    const isInput = node.type === "input_wallet";
     return {
       data: {
         id: node.id,
         label: node.label,
         type: node.type,
-        clusterId: node.clusterId || 0,
-        color: isInput ? "#f59e0b" : clusterColor,
-        size: isInput ? 50 : 30,
+        cluster_id: node.cluster_id ?? -1,
+        color: isCenter ? "#f59e0b" : clusterColor,
+        size: isCenter ? 50 : 30,
       },
     };
   });
 
   const edges = graphData.edges.map((edge, i) => {
-    const weight = Math.max(1, Math.round((edge.txCount / maxTxCount) * 8));
-    const opacity = 0.3 + (edge.totalValue / maxValue) * 0.7;
+    const weight = Math.max(1, Math.round((edge.tx_count / maxTxCount) * 8));
+    const opacity = 0.3 + (edge.total_value / maxValue) * 0.7;
     return {
       data: {
         id: `e${i}`,
         source: edge.source,
         target: edge.target,
-        label: `${edge.txCount}tx`,
+        label: `${edge.tx_count}tx`,
         weight,
         opacity,
-        totalValue: edge.totalValue,
-        assets: edge.assets.join(", "),
+        total_value: edge.total_value,
+        asset: edge.asset,
       },
     };
   });
@@ -69,7 +69,7 @@ const stylesheet = [
     },
   },
   {
-    selector: 'node[type = "input_wallet"]',
+    selector: 'node[type = "center"]',
     style: {
       "border-width": 3,
       "border-color": "#fbbf24",
@@ -103,7 +103,7 @@ const stylesheet = [
   },
 ];
 
-export default function CashFlowGraph({ graphData, explorerBase = "https://sepolia.etherscan.io" }) {
+export default function CashFlowGraph({ graphData }) {
   const cyRef = useRef(null);
   const [tooltip, setTooltip] = useState(null);
 
@@ -112,10 +112,13 @@ export default function CashFlowGraph({ graphData, explorerBase = "https://sepol
 
     cy.on("tap", "node", (evt) => {
       const node = evt.target;
+      const clusterId = node.data("cluster_id");
       setTooltip({
         x: evt.renderedPosition.x + 20,
         y: evt.renderedPosition.y - 20,
-        html: `<strong>${node.data("id")}</strong><br/>Cluster: ${node.data("clusterId") || "N/A"}<br/>Type: ${node.data("type")}`,
+        html: `<strong>${node.data("id")}</strong><br/>
+               Cluster: ${clusterId >= 0 ? clusterId : "N/A"}<br/>
+               Type: ${node.data("type")}`,
       });
     });
 
@@ -124,7 +127,9 @@ export default function CashFlowGraph({ graphData, explorerBase = "https://sepol
       setTooltip({
         x: evt.renderedPosition.x + 20,
         y: evt.renderedPosition.y - 20,
-        html: `<strong>${edge.data("label")}</strong><br/>Value: ${edge.data("totalValue")} ETH<br/>Assets: ${edge.data("assets")}`,
+        html: `<strong>${edge.data("label")}</strong><br/>
+               Value: ${edge.data("total_value")}<br/>
+               Asset: ${edge.data("asset")}`,
       });
     });
 
@@ -150,22 +155,27 @@ export default function CashFlowGraph({ graphData, explorerBase = "https://sepol
     <div className="graph-container">
       <div className="graph-header">
         <h2>CashFlow Map</h2>
+        <div className="graph-stats">
+          <span>{graphData.nodes.length} nodes</span>
+          <span>{graphData.edges.length} edges</span>
+          <span>{graphData.clusters.length} clusters</span>
+        </div>
         <div className="graph-legend">
           <span className="legend-item">
-            <span className="dot" style={{ background: "#f59e0b" }} /> Input Wallet
+            <span className="dot" style={{ background: "#f59e0b" }} /> Center Wallet
           </span>
           <span className="legend-item">
             <span className="dot" style={{ background: "#6366f1" }} /> Related Address
           </span>
-          <span className="legend-item legend-note">
-            Edge thickness = tx count &nbsp; Edge opacity = value
+          <span className="legend-note">
+            Edge thickness = tx count &nbsp;|&nbsp; Edge opacity = value
           </span>
         </div>
       </div>
 
       <div className="cy-wrapper">
         <CytoscapeComponent
-          key={graphData.nodes.length}
+          key={graphData.nodes.length + "-" + graphData.edges.length}
           elements={elements}
           stylesheet={stylesheet}
           layout={{
@@ -191,12 +201,12 @@ export default function CashFlowGraph({ graphData, explorerBase = "https://sepol
         )}
       </div>
 
-      <ClusterTable clusters={graphData.clusters} explorerBase={explorerBase} />
+      <ClusterTable clusters={graphData.clusters} />
     </div>
   );
 }
 
-function ClusterTable({ clusters, explorerBase }) {
+function ClusterTable({ clusters }) {
   const [expanded, setExpanded] = useState({});
 
   if (!clusters || clusters.length === 0) return null;
@@ -205,30 +215,32 @@ function ClusterTable({ clusters, explorerBase }) {
 
   return (
     <div className="cluster-table">
-      <h3>Clusters</h3>
+      <h3>Clusters ({clusters.length})</h3>
       <div className="cluster-list">
         {clusters.map((c) => {
-          const color = CLUSTER_COLORS[(c.clusterId - 1) % CLUSTER_COLORS.length];
-          const isOpen = expanded[c.clusterId];
+          const color = CLUSTER_COLORS[c.cluster_id % CLUSTER_COLORS.length];
+          const isOpen = expanded[c.cluster_id];
           return (
-            <div key={c.clusterId} className="cluster-block">
-              <div className="cluster-row" onClick={() => toggle(c.clusterId)}>
+            <div key={c.cluster_id} className="cluster-block">
+              <div className="cluster-row" onClick={() => toggle(c.cluster_id)}>
                 <span className="cluster-dot" style={{ background: color }} />
-                <span className="cluster-id">Cluster {c.clusterId}</span>
+                <span className="cluster-id">Cluster {c.cluster_id}</span>
                 <span className="cluster-size">{c.size} addresses</span>
-                <span className="cluster-central mono">Central: {c.centralAddress?.slice(0, 10)}...</span>
+                <span className="cluster-central mono">
+                  Central: {c.central_address?.slice(0, 10)}...
+                </span>
                 <span className="cluster-toggle">{isOpen ? "▲" : "▼"}</span>
               </div>
               {isOpen && (
                 <div className="cluster-addresses">
                   {c.addresses.map((addr) => (
                     <div key={addr} className="cluster-addr-row">
-                      {addr === c.centralAddress && (
+                      {addr === c.central_address && (
                         <span className="central-badge">central</span>
                       )}
                       <span className="addr-mono">{addr}</span>
                       <a
-                        href={`${explorerBase}/address/${addr}`}
+                        href={`https://sepolia.etherscan.io/address/${addr}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="etherscan-link"

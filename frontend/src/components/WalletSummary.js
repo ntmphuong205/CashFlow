@@ -10,67 +10,54 @@ function StatCard({ label, value, highlight }) {
   );
 }
 
-export default function WalletSummary({ address, stats, networkLabel }) {
-  if (!stats) return null;
+export default function WalletSummary({ address, summary }) {
+  if (!summary) return null;
 
-  const holderColors = { Whale: "#f59e0b", Medium: "#6366f1", Small: "#10b981" };
-  const holderColor = holderColors[stats.holderType] || "#94a3b8";
+  const nodeColors = { hub: "#f59e0b", satellite: "#6366f1" };
+  const nodeColor = nodeColors[summary.node_type] || "#94a3b8";
+  const nodeLabel = summary.node_type === "hub" ? "Hub Node" : "Satellite Node";
 
   return (
     <div className="wallet-summary">
       <div className="wallet-header">
         <div className="wallet-address-block">
           <span className="wallet-address">{address}</span>
-          {networkLabel && <span className="network-label">{networkLabel}</span>}
+          <span className="network-label">Ethereum Sepolia (self-indexed)</span>
         </div>
-        <span className="holder-badge" style={{ background: holderColor }}>
-          {stats.holderType} Holder
+        <span className="holder-badge" style={{ background: nodeColor }}>
+          {nodeLabel}
         </span>
       </div>
 
       <div className="stat-grid">
-        <StatCard label="Total Transactions" value={stats.totalTransactions} />
-        <StatCard label="Sent" value={stats.sentCount} />
-        <StatCard label="Received" value={stats.receivedCount} />
-        <StatCard label="Unique Counterparties" value={stats.uniqueCounterparties} />
-        <StatCard label="Total Sent" value={`${stats.totalSentValue} ETH`} />
-        <StatCard label="Total Received" value={`${stats.totalReceivedValue} ETH`} />
-        <StatCard label="Largest Tx" value={`${stats.largestTransaction} ETH`} />
-        <StatCard label="Most Used Asset" value={stats.mostUsedAsset} />
+        <StatCard label="Total Transactions" value={summary.total_transactions} highlight />
+        <StatCard label="Sent (ETH)" value={summary.sent_count} />
+        <StatCard label="Received (ETH)" value={summary.received_count} />
+        <StatCard label="Related Addresses" value={summary.related_addresses} />
+        <StatCard label="ETH Sent" value={`${summary.total_eth_sent} ETH`} />
+        <StatCard label="ETH Received" value={`${summary.total_eth_received} ETH`} />
+        <StatCard label="Token Transfers Out" value={summary.total_token_transfers_sent} />
+        <StatCard label="Token Transfers In" value={summary.total_token_transfers_received} />
       </div>
 
       <div className="detail-row">
         <div>
-          <span className="detail-label">Top counterparty (volume):</span>
-          <span className="detail-value mono">{stats.topCounterpartyByVolume}</span>
+          <span className="detail-label">Out-degree:</span>
+          <span className="detail-value">{summary.out_degree} unique destinations</span>
         </div>
         <div>
-          <span className="detail-label">Top counterparty (frequency):</span>
-          <span className="detail-value mono">{stats.topCounterpartyByFrequency}</span>
+          <span className="detail-label">In-degree:</span>
+          <span className="detail-value">{summary.in_degree} unique senders</span>
         </div>
         <div>
-          <span className="detail-label">First seen:</span>
-          <span className="detail-value">{stats.firstSeen !== "N/A" ? new Date(stats.firstSeen).toLocaleDateString() : "N/A"}</span>
-        </div>
-        <div>
-          <span className="detail-label">Last seen:</span>
-          <span className="detail-value">{stats.lastSeen !== "N/A" ? new Date(stats.lastSeen).toLocaleDateString() : "N/A"}</span>
+          <span className="detail-label">Node role:</span>
+          <span className="detail-value" style={{ color: nodeColor, fontWeight: 600 }}>
+            {summary.node_type === "hub"
+              ? "Central node (5+ connections)"
+              : "Satellite node (<5 connections)"}
+          </span>
         </div>
       </div>
-
-      {stats.abnormalFlags && stats.abnormalFlags.length > 0 && (
-        <div className="abnormal-flags">
-          <div className="flags-title">Abnormal Signals</div>
-          {stats.abnormalFlags.map((flag, i) => (
-            <span key={i} className="flag-badge">{flag}</span>
-          ))}
-        </div>
-      )}
-
-      <p className="disclaimer">
-        This tool performs on-chain behavioral analysis only. It does not identify
-        real-world identities behind wallet addresses.
-      </p>
     </div>
   );
 }

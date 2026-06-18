@@ -59,8 +59,22 @@
   overflow: hidden;
 }
 
+.graph-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.graph-stats span {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
 .cy-tooltip {
-  display: none;
+  display: block;
   position: absolute;
   background: #1e293b;
   border: 1px solid #475569;

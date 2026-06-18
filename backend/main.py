@@ -1,9 +1,14 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from services.alchemy_service import get_asset_transfers, get_wallet_stats
+from services.db_service import (
+    get_wallet_summary,
+    get_wallet_transactions,
+    get_wallet_edges,
+    get_crawl_status,
+)
 from services.graph_service import build_graph
 
-app = FastAPI(title="Blockchain Account Tracker")
+app = FastAPI(title="CashFlow Map — Sepolia Wallet Tracker")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,71 +18,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SUPPORTED_NETWORKS = {
-    "eth-sepolia",
-    "eth-mainnet",
-    "polygon-mainnet",
-    "base-mainnet",
-    "arb-mainnet",
-}
 
-
-def validate_network(network: str) -> str:
-    if network not in SUPPORTED_NETWORKS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported network '{network}'. Choose from: {', '.join(sorted(SUPPORTED_NETWORKS))}",
-        )
-    return network
-
-
-@app.get("/api/wallet/{address}/transfers")
-def get_wallet_transfers(
-    address: str,
-    network: str = Query(default="eth-sepolia"),
-):
-    validate_network(network)
+@app.get("/api/wallet/{address}/summary")
+def wallet_summary(address: str):
     try:
-        transfers = get_asset_transfers(address, network)
-        return {
-            "address": address,
-            "network": network,
-            "totalTransactions": len(transfers),
-            "transfers": transfers,
-        }
+        return {"address": address, "summary": get_wallet_summary(address)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/wallet/{address}/stats")
-def get_wallet_statistics(
+@app.get("/api/wallet/{address}/transactions")
+def wallet_transactions(
     address: str,
-    network: str = Query(default="eth-sepolia"),
+    limit: int = Query(default=50, ge=1, le=200),
 ):
-    validate_network(network)
     try:
-        transfers = get_asset_transfers(address, network)
-        stats = get_wallet_stats(address, transfers)
-        return {"address": address, "network": network, **stats}
+        txs = get_wallet_transactions(address, limit)
+        return {"address": address, "count": len(txs), "transactions": txs}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/wallet/{address}/graph")
-def get_wallet_graph(
+def wallet_graph(
     address: str,
-    network: str = Query(default="eth-sepolia"),
+    depth: int = Query(default=1, ge=1, le=2),
 ):
-    validate_network(network)
     try:
-        transfers = get_asset_transfers(address, network)
-        graph = build_graph(transfers, address)
-        stats = get_wallet_stats(address, transfers)
+        summary = get_wallet_summary(address)
+        edges = get_wallet_edges(address, depth=depth)
+        graph = build_graph(edges, address)
         return {
             "address": address,
-            "network": network,
-            "stats": stats,
+            "summary": summary,
             "graph": graph,
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/crawl/status")
+def crawl_status():
+    try:
+        return get_crawl_status()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

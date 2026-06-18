@@ -2,89 +2,84 @@ import networkx as nx
 from collections import defaultdict
 
 
-def shorten_address(address: str) -> str:
-    return address[:6] + "..." + address[-4:]
+def _shorten(addr: str) -> str:
+    return addr[:6] + "..." + addr[-4:]
 
 
-def build_graph(transfers: list, input_address: str) -> dict:
-    input_address = input_address.lower()
-    edge_map: dict = defaultdict(lambda: {"txCount": 0, "totalValue": 0.0, "assets": set()})
-    nodes: dict = {}
+def build_graph(edges: list, center_address: str) -> dict:
+    center_address = center_address.lower()
+    node_map: dict = {}
+    edge_agg: dict = defaultdict(lambda: {"tx_count": 0, "total_value_raw": 0.0})
 
-    nodes[input_address] = {
-        "id": input_address,
-        "label": shorten_address(input_address),
-        "type": "input_wallet",
-    }
+    for e in edges:
+        src = e["from_address"]
+        tgt = e["to_address"]
+        asset = e["asset"]
+        raw_value = float(e["total_value"] or 0)
+        tx_count = int(e["tx_count"] or 0)
 
-    for tx in transfers:
-        from_addr = (tx.get("from") or "").lower()
-        to_addr = (tx.get("to") or "").lower()
-        value = float(tx.get("value") or 0)
-        asset = tx.get("asset") or "UNKNOWN"
-
-        if not from_addr or not to_addr:
-            continue
-
-        for addr in (from_addr, to_addr):
-            if addr not in nodes:
-                nodes[addr] = {
+        for addr in (src, tgt):
+            if addr not in node_map:
+                node_map[addr] = {
                     "id": addr,
-                    "label": shorten_address(addr),
-                    "type": "wallet",
+                    "label": _shorten(addr),
+                    "type": "center" if addr == center_address else "wallet",
                 }
 
-        key = (from_addr, to_addr)
-        edge_map[key]["txCount"] += 1
-        edge_map[key]["totalValue"] += value
-        edge_map[key]["assets"].add(asset)
+        key = (src, tgt, asset)
+        edge_agg[key]["tx_count"] += tx_count
+        edge_agg[key]["total_value_raw"] += raw_value
 
-    edges = [
-        {
+    if center_address not in node_map:
+        node_map[center_address] = {
+            "id": center_address,
+            "label": _shorten(center_address),
+            "type": "center",
+        }
+
+    graph_edges = []
+    for (src, tgt, asset), data in edge_agg.items():
+        raw = data["total_value_raw"]
+        display_value = round(raw / 1e18, 8) if asset == "ETH" else raw
+        graph_edges.append({
             "source": src,
             "target": tgt,
-            "txCount": data["txCount"],
-            "totalValue": round(data["totalValue"], 6),
-            "assets": list(data["assets"]),
-        }
-        for (src, tgt), data in edge_map.items()
-    ]
+            "asset": "ETH" if asset == "ETH" else asset[:10] + "...",
+            "asset_full": asset,
+            "tx_count": data["tx_count"],
+            "total_value": display_value,
+        })
 
-    clusters = detect_clusters(nodes, edges)
+    clusters = _detect_clusters(node_map, graph_edges)
 
     for cluster in clusters:
         for addr in cluster["addresses"]:
-            if addr in nodes and addr != input_address:
-                nodes[addr]["clusterId"] = cluster["clusterId"]
+            if addr in node_map:
+                node_map[addr]["cluster_id"] = cluster["cluster_id"]
 
     return {
-        "nodes": list(nodes.values()),
-        "edges": edges,
+        "nodes": list(node_map.values()),
+        "edges": graph_edges,
         "clusters": clusters,
     }
 
 
-def detect_clusters(nodes: dict, edges: list) -> list:
-    graph = nx.Graph()
+def _detect_clusters(node_map: dict, edges: list) -> list:
+    G = nx.Graph()
+    for node_id in node_map:
+        G.add_node(node_id)
+    for e in edges:
+        G.add_edge(e["source"], e["target"])
 
-    for node_id in nodes:
-        graph.add_node(node_id)
-
-    for edge in edges:
-        graph.add_edge(edge["source"], edge["target"], weight=edge["totalValue"])
-
-    components = list(nx.connected_components(graph))
-    components.sort(key=lambda c: len(c), reverse=True)
-
+    components = sorted(nx.connected_components(G), key=len, reverse=True)
     clusters = []
-    for index, component in enumerate(components):
-        degree_map = {n: graph.degree(n) for n in component}
+    for idx, component in enumerate(components):
+        degree_map = {n: G.degree(n) for n in component}
         central = max(degree_map, key=lambda k: degree_map[k])
         clusters.append({
-            "clusterId": index + 1,
+            "cluster_id": idx,
             "size": len(component),
             "addresses": list(component),
-            "centralAddress": central,
+            "central_address": central,
         })
-
     return clusters
